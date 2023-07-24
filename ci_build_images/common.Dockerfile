@@ -9,6 +9,8 @@ RUN make -j"$(nproc)" \
     && cp qpress /usr/local/bin/ \
     && rm -rf /tmp/qpress
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Configure buildbot user
 RUN if getent passwd 1000; then \
         userdel --force --remove "$(getent passwd 1000 | cut -d: -f1)"; \
