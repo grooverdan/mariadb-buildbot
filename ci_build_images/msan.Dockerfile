@@ -137,12 +137,6 @@ RUN . /etc/os-release \
     && cmake --build build \
     && mv build/libfmt.so* $MSAN_LIBDIR \
     && rm -rf -- * \
-    && apt-get source libssl-dev \
-    && mv openssl-*/* . \
-    && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand $(if [ "${CLANG_VERSION}" = 19 ]; then echo no-asm enable-msan; fi) \
-    && make -j "$(nproc)" build_libs \
-    && mv ./*.so* $MSAN_LIBDIR \
-    && rm -rf -- * \
     && apt-get source  libpcre2-dev \
     && mv pcre2-*/* . \
     && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
