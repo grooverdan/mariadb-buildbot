@@ -24,6 +24,7 @@ RUN . /etc/os-release \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/ctest "$@"' > "$NO_MSAN_PATH"/ctest \
+    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /bin/grep "$@"' > "$NO_MSAN_PATH"/grep \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
     http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
@@ -138,7 +139,7 @@ RUN . /etc/os-release \
     && rm -rf -- * \
     && apt-get source libssl-dev \
     && mv openssl-*/* . \
-    && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand enable-msan \
+    && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand $(if [ "${CLANG_VERSION}" = 19 ]; then echo no-asm enable-msan; fi) \
     && make -j "$(nproc)" build_libs \
     && mv ./*.so* $MSAN_LIBDIR \
     && rm -rf -- * \
@@ -147,6 +148,13 @@ RUN . /etc/os-release \
     && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
     && cmake --build build/ \
     && mv ./build/libpcre2*so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source libxcrypt \
+    && mv libxcrypt-*/* . \
+    && ./autogen.sh \
+    && ./configure --disable-xcrypt-compat-files --enable-obsolete-api=glibc \
+    && make -j "$(nproc)" libcrypt.la \
+    && mv .libs/libcrypt.so.* $MSAN_LIBDIR \
     && rm -rf -- * \
     && ls -la $MSAN_LIBDIR
 
