@@ -38,8 +38,8 @@ RUN . /etc/os-release \
        libc++-${CLANG_VERSION}-dev \
        llvm-${CLANG_VERSION} \
        automake \
-    && if [ "${CLANG_VERSION}" = 19 ]; then \
-        apt-get -y install --no-install-recommends libclang-19-dev libllvmlibc-19-dev; fi \
+    && if [ "${CLANG_VERSION}" -ge 19 ]; then \
+        apt-get -y install --no-install-recommends libclang-${CLANG_VERSION}-dev libllvmlibc-${CLANG_VERSION}-dev; fi \
     && update-alternatives \
         --verbose \
         --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
