@@ -2,6 +2,11 @@
 # this is to create images with MSAN for BB workers
 ARG CLANG_VERSION=15
 
+# Marker to make it possible to build a dev msan builder
+# from the nightly clang versions as they are in a differently
+# name repo
+ENV CLANG_DEV_VERSION=20
+
 WORKDIR /tmp/msan
 
 ENV CC=clang
@@ -26,10 +31,14 @@ RUN . /etc/os-release \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/ctest "$@"' > "$NO_MSAN_PATH"/ctest \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /bin/grep "$@"' > "$NO_MSAN_PATH"/grep \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
-    && echo "deb-src [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+    && if [ "${CLANG_VERSION}" -ge "${CLANG_DEV_VERSION}" ]; then \
+        export LLVM_DIR="llvm-toolchain-snapshot-${CLANG_VERSION}" ; \
+        export LLVM_DEB="${VERSION_CODENAME}" ; \
+       else \
+        export LLVM_DIR="llvm-toolchain-${CLANG_VERSION}-${CLANG_VERSION}" ; \
+        export LLVM_DEB="${VERSION_CODENAME}-${CLANG_VERSION}"; fi \
+    && for v in deb deb-src; do \
+         echo "$v [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${LLVM_DEB} main" >> /etc/apt/sources.list.d/llvm-toolchain.list; done \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
        clang-${CLANG_VERSION} \
@@ -45,7 +54,7 @@ RUN . /etc/os-release \
         --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
         --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-"${CLANG_VERSION}" \
     && apt-get source libc++-${CLANG_VERSION}-dev \
-    && mv llvm-toolchain-${CLANG_VERSION}-${CLANG_VERSION}*/* . \
+    && mv "$LLVM_DIR"*/* . \
     && mkdir build \
     && cmake \
         -S runtimes \
@@ -54,7 +63,7 @@ RUN . /etc/os-release \
         -DCMAKE_C_COMPILER=clang-${CLANG_VERSION} \
         -DCMAKE_CXX_COMPILER=clang++-${CLANG_VERSION} \
         -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
-        $(if [ "${CLANG_VERSION}" = 19 ]; then echo "-DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF"; fi) \
+        $(if [ "${CLANG_VERSION}" -ge 19 ]; then echo "-DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF"; fi) \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && cmake --build build --parallel "$(nproc)" \
     && cp -aL build/lib/lib*.so* $MSAN_LIBDIR \
