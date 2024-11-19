@@ -158,15 +158,17 @@ RUN . /etc/os-release \
     && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
     && cmake --build build/ \
     && mv ./build/libpcre2*so* $MSAN_LIBDIR \
-    && rm -rf -- * \
-    && apt-get source libxcrypt \
-    && mv libxcrypt-*/* . \
-    && ./autogen.sh \
-    && ./configure --disable-xcrypt-compat-files --enable-obsolete-api=glibc \
-    && make -j "$(nproc)" libcrypt.la \
-    && mv .libs/libcrypt.so.* $MSAN_LIBDIR \
-    && rm -rf -- * \
-    && apt-get source cppunit \
+    && rm -rf -- *
+
+#RUN apt-get source libxcrypt \
+#    && mv libxcrypt-*/* . \
+#    && ./autogen.sh \
+#    && ./configure --disable-xcrypt-compat-files --enable-obsolete-api=glibc \
+#    && make -j "$(nproc)" libcrypt.la \
+#    && mv .libs/libcrypt.so.* $MSAN_LIBDIR \
+#    && rm -rf -- *
+
+RUN apt-get source cppunit \
     && mv cppunit-*/* . \
     && ./configure \
     && make -j "$(nproc)" \
