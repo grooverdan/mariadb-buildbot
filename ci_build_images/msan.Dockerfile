@@ -160,6 +160,20 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" libcrypt.la \
     && mv .libs/libcrypt.so.* $MSAN_LIBDIR \
     && rm -rf -- * \
+    && apt-get source cppunit \
+    && mv cppunit-*/* . \
+    && ./configure \
+    && make -j "$(nproc)" \
+    && mv ./src/cppunit/.libs/libcppunit.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get install libcppunit-dev \
+    && apt-get source subunit \
+    && mv  subunit-*/* . \
+    && autoreconf  -vi \
+    && ./configure \
+    && make libsubunit.la \
+    && mv .libs/libsubunit.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
     && ls -la $MSAN_LIBDIR
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
