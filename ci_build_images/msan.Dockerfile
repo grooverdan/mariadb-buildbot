@@ -174,7 +174,7 @@ RUN apt-get source cppunit \
     && make -j "$(nproc)" \
     && mv ./src/cppunit/.libs/libcppunit.so* $MSAN_LIBDIR \
     && rm -rf -- * \
-    && apt-get install libcppunit-dev \
+    && apt-get install -y libcppunit-dev \
     && apt-get source subunit \
     && mv  subunit-*/* . \
     && autoreconf  -vi \
