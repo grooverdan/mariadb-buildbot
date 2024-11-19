@@ -20,6 +20,7 @@ ENV PATH=$NO_MSAN_PATH:$PATH
 
 # hadolint ignore=SC2046
 RUN . /etc/os-release \
+    && chmod a-t /tmp \
     && if [ "${CLANG_VERSION}" -gt 17 ]; then \
         export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
     else \
