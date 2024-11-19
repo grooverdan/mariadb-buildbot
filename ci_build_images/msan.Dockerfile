@@ -112,10 +112,8 @@ RUN . /etc/os-release \
     && apt-get source gmp \
     && mv gmp-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
-    && if [ "${VERSION_CODENAME}" = "bookworm" ]; then \
-        sed -e '/^.*"doc\/Makefile".*/d;s/doc\/Makefile //;' -i.bak configure \
-        && sed -e 's/^\(SUBDIRS = .*\) doc$/\1/;' -i.bak Makefile.in; \
-    fi \
+    && sed -e '/^.*"doc\/Makefile".*/d;s/doc\/Makefile //;' -i.bak configure \
+    && sed -e 's/^\(SUBDIRS = .*\) doc$/\1/;' -i.bak Makefile.in \
     && ./configure \
         --disable-assembly \
     && make -j "$(nproc)" \
