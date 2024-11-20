@@ -7,7 +7,7 @@ ARG CLANG_VERSION=15
 # name repo
 ENV CLANG_DEV_VERSION=20
 
-WORKDIR /tmp/msan
+WORKDIR /msan-build
 
 ENV CC=clang
 ENV CXX=clang++
@@ -20,7 +20,6 @@ ENV PATH=$NO_MSAN_PATH:$PATH
 
 # hadolint ignore=SC2046
 RUN . /etc/os-release \
-    && chmod a-t /tmp \
     && if [ "${CLANG_VERSION}" -gt 17 ]; then \
         export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
     else \
@@ -200,7 +199,6 @@ RUN . /etc/os-release \
     && create-cracklib-dict ./dicts/cracklib-small \
     && cp -aL lib/.libs/*.so* $MSAN_LIBDIR \
     && rm -rf -- * \
-    && rm -rf /tmp/msan \
     && apt-get clean \
     && apt-get -y purge \
        bzip2 \
