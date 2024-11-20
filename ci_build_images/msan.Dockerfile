@@ -171,11 +171,12 @@ RUN . /etc/os-release \
     && libtoolize \
     && automake --add-missing \
     && autoreconf \
-    && ./configure --without-python \
+    && CFLAGS="$CFLAGS -Wno-error=int-conversion" ./configure --without-python \
         --with-default-dict=/usr/share/dict/cracklib-small \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/*.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
+    && rm -rf * \
     && apt-get clean \
     && apt-get -y purge \
        bzip2 \
