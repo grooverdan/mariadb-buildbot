@@ -32,13 +32,6 @@ jobs:
             clang_version: 19
             nogalera: false
 
-          - image: debian:11
-            platforms: linux/amd64
-            branch: 10.11
-            tag: debian11-msan-clang-16
-            clang_version: 16
-            nogalera: false
-
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: rr.Dockerfile debian.Dockerfile msan.Dockerfile
