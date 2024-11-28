@@ -177,7 +177,6 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/*.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
-    && rm -rf * \
     && apt-get clean \
     && apt-get -y purge \
        bzip2 \
