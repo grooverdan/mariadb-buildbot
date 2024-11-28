@@ -18,6 +18,9 @@ ENV MSAN_SYMBOLIZER_PATH=$NO_MSAN_PATH/llvm-symbolizer-msan
 
 ENV PATH=$NO_MSAN_PATH:$PATH
 
+ENV CFLAGS="-fno-omit-frame-pointer -O2 -g"
+ENV CXXFLAGS="$CFLAGS"
+
 # hadolint ignore=SC2046
 RUN . /etc/os-release \
     && if [ "${CLANG_VERSION}" -gt 17 ]; then \
