@@ -131,13 +131,14 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
-    && apt-get source libfmt-dev \
+    && if [ $VERSION_CODE != trixie ]; then \
+      apt-get source libfmt-dev \
     && cd fmtlib-* \
     && mkdir build \
     && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
     && cmake --build build \
     && mv build/libfmt.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && cd $OLDPWD ; fi \
     && apt-get source libssl-dev \
     && cd openssl-* \
     && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand $(if [ "${CLANG_VERSION}" -ge 19 ]; then echo no-asm enable-msan; fi) $CFLAGS \
