@@ -29,7 +29,7 @@ jobs:
             archs: amd64
     env:
       DEPLOY_IMAGES: false
-      WORKDIR: eco_build_images
+      WORKDIR: eco_build_images/wordpress
 
     steps:
       - uses: actions/checkout@v4
