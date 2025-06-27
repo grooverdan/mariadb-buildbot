@@ -1,0 +1,61 @@
+services:
+  mariadb:
+    image: mariadb:11.8
+    container_name: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    command:
+      - --disconnect_on_expired_password
+      - --plugin-load-add=auth_pam
+      - --pam_use_cleartext_plugin=ON
+      - --socket=${MARIADB_SOCKET}
+      - --local-infile
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - mariadb_socket:/run/mysqld
+    networks:
+      - appnet
+
+  php:
+    build:
+      context: .
+      dockerfile: php.Dockerfile
+      args:
+        PHP_VERSION: 7.1
+    container_name: php
+    environment:
+      MYSQL_TEST_DB: ${MARIADB_DATABASE}
+      MYSQL_TEST_HOST: mariadb
+      MYSQL_TEST_PORT: 3306
+      MYSQL_TEST_SOCKET: ${MARIADB_SOCKET}
+      MYSQL_TEST_USER: ${MARIADB_USER}
+      MYSQL_TEST_PASSWD: ${MARIADB_PASSWORD}
+      PDO_MYSQL_TEST_HOST: mariadb
+      PDO_MYSQL_TEST_USER: ${MARIADB_USER}
+      PDO_MYSQL_TEST_PASS: ${MARIADB_PASSWORD}
+      PDO_MYSQL_TEST_SOCKET: ${MARIADB_SOCKET}
+      PDO_MYSQL_TEST_DSN: "mysql:host=mariadb;dbname=${MARIADB_DATABASE};socket=${MARIADB_SOCKET}"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    volumes:
+      - mariadb_socket:/run/mysqld
+    tmpfs:
+      - /tmp:size=10m
+    networks:
+      - appnet
+
+volumes:
+  mariadb_socket:
+
+networks:
+  appnet:
+
