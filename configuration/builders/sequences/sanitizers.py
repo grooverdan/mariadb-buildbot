@@ -221,6 +221,7 @@ def msan(
     if isDebugBuildType:
         flags.append(CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG))
         flags.append(CMakeOption(WITH.DBUG_TRACE, False))
+        flags.append(CMakeOption(PLUGIN.PERFSCHEMA_FEATURE, False))
 
     sequence.add_step(
         InContainer(
