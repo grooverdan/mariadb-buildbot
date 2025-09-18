@@ -219,6 +219,8 @@ def msan(
         CMakeOption(PLUGIN.OQGRAPH_STORAGE_ENGINE, False),
     ]
     if isDebugBuildType:
+        flags.append(CMakeOption(CMAKE.C_FLAGS, "-O2"))
+        flags.append(CMakeOption(CMAKE.CXX_FLAGS, "-O2"))
         flags.append(CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG))
         flags.append(CMakeOption(WITH.DBUG_TRACE, False))
         flags.append(CMakeOption(PLUGIN.PERFSCHEMA_FEATURE, False))
